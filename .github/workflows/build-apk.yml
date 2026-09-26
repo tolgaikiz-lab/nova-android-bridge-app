@@ -1,0 +1,36 @@
+name: NOVA Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Kaynak paketi aç
+        run: unzip -o NOVA-Android-Bridge-source.zip -d .
+
+      - name: Java'yı hazırla
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle'i kur
+        run: |
+          curl -sL https://services.gradle.org/distributions/gradle-8.10.2-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          echo "$PWD/gradle-8.10.2/bin" >> $GITHUB_PATH
+
+      - name: APK oluştur
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: APK'yı hazırla
+        uses: actions/upload-artifact@v4
+        with:
+          name: NOVA-Android-Bridge-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
